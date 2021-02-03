@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Page Needs -->
+	<meta charset="utf-8">
+	<title>Example</title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<!-- Mobile Specific Metas -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- FONT -->
+	<link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/skeleton.css">
+
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+
+</head>
+
+<body>
+
+
+	<script type="text/javascript">
+
+		// Chord Graph Tutorial by Dimitris Papanikolaou
+		// 2019 02 3
+
+		// STEP 1: Setup
+		var nTrips = 30;
+		var nStations = 6;
+
+		var margin = 50;
+		var width = 600;
+
+		var xPos = margin;
+		var yPos = margin;
+
+		var thickness = 30;
+		var diameter = width - 2*margin;
+		var outerRadius = diameter / 2;
+		var innerRadius = outerRadius - thickness;
+
+		var color = d3.scale.linear()
+			.domain([0, nStations])
+			.range([d3.rgb(255,0,0), d3.rgb(50,0,0)]);
+
+
+		// STEP 2: Create/Get Data and OD Matrix
+		var tripData = createTripData(nTrips, nStations);
+		var stationData = createStationData(nStations);
+		var od_matrix = createMatrix(tripData, stationData);
+
+
+
+		// STEP 3: Create Chord Layout
+		var chordLayout = d3.layout.chord()
+			.matrix(od_matrix)
+			.padding(0.05)
+			.sortGroups(d3.descending); // You can also pass custom sorting functions that compare two objects like function(a,b){...}
+		// About d3.layout.chord():
+		// d3.layout.chord() is a D3 layout object. Read about D3 Layouts here: https://d3indepth.com/layouts/ and about Chord Layout here: https://d3-wiki.readthedocs.io/zh_CN/master/Chord-Layout/
+		// Once the Chord Layout is being assigned an OD matrix ( d3.layout.chord().matrix(od_matrix) ), it can return groups and chords arrays as follows:
+		// function chordLayout.groups() returns the groups
+		// function chordLayout.chords() returns the chords
+
+
+		// STEP 4: Create SVG Shape Generators for arcs and chords
+		var arc = d3.svg.arc()
+		    .innerRadius(innerRadius)
+		    .outerRadius(outerRadius);
+		// About d3.svg.arc():
+		// d3.svg.arc() is an SVG Shape Generator. Read more about SVG Shape Generators here: https://d3indepth.com/shapes/
+		// d3.svg.arc() takes a group object as an input and returns its path
+		// To define an arc SVG Shape Generator you first need to define the inner and outer radii
+		// function chordLayout.groups() returns an array with all groups (e.g. arc sectors)
+		// each group object contains a start angle, an end angle, an index number, and a value.
+		// for example, arc(chordLayout.groups()[2]) returns the path of the third group
+
+
+		var chord = d3.svg.chord()
+			.radius(innerRadius - 5);
+		// About d3.svg.chord():
+		// d3.svg.chord() is also an SVG Shape Generator. It takes a chord object as an input and returns its path
+		// To define a chord SVG Shape Generator you first need to define the radious
+		// chordLayout.chords() returns an array with all chords
+		// each chord object consists of a source and a target, and each of the source and target is a segment of a group with its own start angle and end angle
+		// for example, chord(chordLayout.chords()[12]) returns the path of the 13th chord
+
+
+		// STEP 5: Create the SVG and an empty group "g" to contain the Arc and Chord Shapes that you will be generating
+		var svgGroup = d3.select("body").append("svg")
+			.attr("width", 800)
+			.attr("height", 800)
+			.append("g")
+			.attr("transform", "translate(" + (xPos + outerRadius) + "," + (yPos + outerRadius) + ")");
+		// Create an SVG element in the body of the html page, and define its width and height
+		// Then, append an empty "group" (g) inside it, and determine its X,Y origin
+		// You need this g element in order to start embedding paths inside it and consider them as a single object.
+
+
+		// STEP 6: Draw Arcs/Groups
+		svgGroup.selectAll(".group")
+			.data(chordLayout.groups())
+			.enter()
+			.append("g")
+			.attr("class", "group")
+			.append("path")
+			.attr("id", function(d, i) { return "group" + i; })
+			.style("fill", function(d) { return color(d.index); })
+			.style("stroke", d3.rgb(0,0,0))
+			.style("stroke-width", 1)
+			.attr("d", function(d) { return arc(d)})
+			.on("hover", function (d,i) {
+			})
+			.on("click", function (d,i) {
+			});
+
+		// STEP 7: Draw Chords
+		svgGroup.selectAll(".chord")
+			.data(chordLayout.chords())
+			.enter()
+			.append("path")
+			.attr("class", "chord")
+			.style("fill", d3.rgb(180,180,180))
+			.style("stroke", d3.rgb(180,180,180).darker(3))
+			.style("opacity", 0.5)
+			// .style("opacity", function(d){
+			// 	if(d.source.index==2 || d.target.index==2)
+			// 		return 1;
+			// 	else
+			// 		return 0.1
+			// })
+			.attr("d", function(d) { return chord(d)} )
+			.on("hover", function (d) {
+			})
+			.on("click", function (d,i) {
+			});
+
+
+
+
+
+
+
+		/********************/
+		/********************/
+		/***** FUNCTIONS ****/
+		/********************/
+		/********************/
+
+
+		function createTripData(nTrips, nStations){
+			var trips = [];
+			for(var i=0; i<nTrips; i++){
+				var origin_index = Math.floor(Math.random() * nStations);
+				var destination_index = Math.floor(Math.random() * nStations);
+				trips.push({
+					start_station: origin_index,
+					end_station: destination_index
+				})
+			}
+			return trips;
+		}
+		function createStationData(nStations){
+			var stations=[];
+			for(var i=0; i<nStations; i++){
+				stations.push({
+					name: i
+				})
+			}
+			return stations;
+		}
+
+		function createMatrix(tripData, stationData){
+			var indexByNameTrip = d3.map();
+			var nameByIndexTrip = d3.map();
+			var n = 0;
+			tripData.forEach(function(d) {
+				if (!indexByNameTrip.has(d.start_station)) {
+					nameByIndexTrip.set(n, d.start_station);
+					indexByNameTrip.set(d.start_station, n++);
+				}
+
+			});
+
+			var indexByNameStation = d3.map();
+			var nameByIndexStation = d3.map();
+			var j = 0;
+			stationData.forEach(function(d) {
+				if (!indexByNameStation.has(d.name)) {
+					nameByIndexStation.set(j, d.name);
+					indexByNameStation.set(d.name, j++);
+				}
+			});
+
+
+			//Create the OD matrix
+			var od_matrix = [];
+			tripData.forEach(function(d) {
+				var  startStationIndex = indexByNameTrip.get(d.start_station);
+				var  endStationIndex = indexByNameTrip.get(d.end_station);
+				if (!od_matrix[startStationIndex]) {
+					od_matrix[startStationIndex] = [];
+					for (var i = 0; i < n; i++) {
+						od_matrix[startStationIndex][i] = 0;
+					}
+				}
+				od_matrix[startStationIndex][endStationIndex]++;;
+			});
+			return od_matrix;
+		}
+
+
+
+	</script>
+
+
+
+</body>
+</html>
