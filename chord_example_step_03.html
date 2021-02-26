@@ -46,8 +46,8 @@
 		var innerRadius = outerRadius - thickness;
 
 		var color = d3.scale.linear()
-			.domain([0, nStations])
-			.range([d3.rgb(255,0,0), d3.rgb(50,0,0)]);
+		.domain([0, nStations])
+		.range([d3.rgb(255,0,0), d3.rgb(50,0,0)]);
 
 
 		// STEP 2: Create/Get Data and OD Matrix
@@ -59,9 +59,9 @@
 
 		// STEP 3: Create Chord Layout
 		var chordLayout = d3.layout.chord()
-			.matrix(od_matrix)
-			.padding(0.05)
-			.sortGroups(d3.descending); // You can also pass custom sorting functions that compare two objects like function(a,b){...}
+		.matrix(od_matrix)
+		.padding(0.05)
+		.sortGroups(d3.descending); // You can also pass custom sorting functions that compare two objects like function(a,b){...}
 		// About d3.layout.chord():
 		// d3.layout.chord() is a D3 layout object. Read about D3 Layouts here: https://d3indepth.com/layouts/ and about Chord Layout here: https://d3-wiki.readthedocs.io/zh_CN/master/Chord-Layout/
 		// Once the Chord Layout is being assigned an OD matrix ( d3.layout.chord().matrix(od_matrix) ), it can return groups and chords arrays as follows:
@@ -71,8 +71,8 @@
 
 		// STEP 4: Create SVG Shape Generators for arcs and chords
 		var arc = d3.svg.arc()
-		    .innerRadius(innerRadius)
-		    .outerRadius(outerRadius);
+		.innerRadius(innerRadius)
+		.outerRadius(outerRadius);
 		// About d3.svg.arc():
 		// d3.svg.arc() is an SVG Shape Generator. Read more about SVG Shape Generators here: https://d3indepth.com/shapes/
 		// d3.svg.arc() takes a group object as an input and returns its path
@@ -83,7 +83,7 @@
 
 
 		var chord = d3.svg.chord()
-			.radius(innerRadius - 5);
+		.radius(innerRadius - 5);
 		// About d3.svg.chord():
 		// d3.svg.chord() is also an SVG Shape Generator. It takes a chord object as an input and returns its path
 		// To define a chord SVG Shape Generator you first need to define the radious
@@ -93,52 +93,19 @@
 
 
 		// STEP 5: Create the SVG and an empty group "g" to contain the Arc and Chord Shapes that you will be generating
-		var svgGroup = d3.select("body").append("svg")
-			.attr("width", 800)
-			.attr("height", 800)
-			.append("g")
-			.attr("transform", "translate(" + (xPos + outerRadius) + "," + (yPos + outerRadius) + ")");
+		var svgGroup = d3.select("body")
+		.append("svg")
+		.attr("width", 800)
+		.attr("height", 800)
+		.append("g")
+		.attr("transform", "translate(" + (xPos + outerRadius) + "," + (yPos + outerRadius) + ")");
 		// Create an SVG element in the body of the html page, and define its width and height
 		// Then, append an empty "group" (g) inside it, and determine its X,Y origin
 		// You need this g element in order to start embedding paths inside it and consider them as a single object.
 
 
-		enter(chordLayout.groups(), chordLayout.chords());
-		// update(chordLayout.groups(), chordLayout.chords());
-		// exit(chordLayout.groups(), chordLayout.chords());
-
-		// This is different than enter(): the first time you draw something you append everything as a new element. In enter(), however, you must append all that is new .
-		var ticks = svgGroup
-			.selectAll(".ticks")
-			.data(chordLayout.groups())
-			.enter()
-			.append("g")
-			.attr("class", "ticks")
-			.selectAll("g")
-			.data(groupTicks)
-			.enter()
-			.append("g")
-			.attr("transform", function(d) {
-		        return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-		            + "translate(" + (outerRadius + 10) + ",0)";
-		      });
-		ticks
-			.append("line")
-			.attr("x1", 1)
-		      .attr("y1", 0)
-		      .attr("x2", 10)
-		      .attr("y2", 0)
-		      .style("stroke", "#000");
-		ticks
-      	      .append("text")
-		      .attr("x", 15)
-		      .attr("font-size", "11px")
-		      .attr("dy", ".35em")
-			.attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180)translate(-30)" : null; })
-			.style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-		      .text(function(d) { return d.label; });
-
-
+		// STEP 6: Create and/or update the chord graph by passing the arc data (called "groups") and the chord data. See more info and substeps in the update() function description below
+		update(chordLayout.groups(), chordLayout.chords());
 
 
 		/********************/
@@ -169,7 +136,6 @@
 			}
 			return stations;
 		}
-
 		function createMatrix(tripData, stationData){
 			var indexByNameTrip = d3.map();
 			var nameByIndexTrip = d3.map();
@@ -209,128 +175,63 @@
 			return od_matrix;
 		}
 
+		function update(arc_data, chord_data){
+
+			// Arcs
+			// Step 1: Bind data to arcs
+			var arcs = svgGroup
+			.selectAll(".arc")
+			.data(arc_data);
+
+			// Step 2: Append any new arcs if needed
+			arcs
+			.enter()
+			.append("path")
+			.attr("class", "arc");
+
+			// Step 3: Remove any excessive arcs if needed
+			arcs
+			.exit()
+			.remove();
+
+			// Step 4: Modify the arcs based on their bound data
+			arcs
+			.attr("id", function(d, i) { return "arc_" + i; })
+			.style("fill", function(d) { return color(d.index); })
+			.style("stroke", d3.rgb(0,0,0))
+			.style("stroke-width", 1)
+			.attr("d", function(d) { return arc(d)});
 
 
-		function enter(arc_data, chord_data){
-			// STEP 6: Draw Arcs
-			svgGroup.selectAll(".arc")
-				.data(arc_data)
+			// Chords
+			// STEP 1: Bind data to chords
+			var chords = svgGroup
+			.selectAll(".chord")
+				.data(chord_data);
+
+			// Step 2: Append any new chords if needed
+			chords
 				.enter()
 				.append("path")
-				.attr("class", "arc")
-				.attr("id", function(d, i) { return "arc_" + i; })
-				.style("fill", function(d) { return color(d.index); })
-				.style("stroke", d3.rgb(0,0,0))
-				.style("stroke-width", 1)
-				.attr("d", function(d) { return arc(d)})
-				.on("mouseover", function(d, i) {
-					d3.select(this)
-					.style('fill-opacity', 0.1)
-				  })
-				.on("mouseout", function(d, i) {
-					d3.select(this)
-					.style('fill-opacity', 1)
-				  })
-				// .on("hover", function (d,i) {
-				// })
-				.on("click", function (d,i) {
-				});
+				.attr("class", "chord");
 
-			// STEP 7: Draw Chords
-			svgGroup.selectAll(".chord")
-				.data(chord_data)
-				.enter()
-				.append("path")
-				.attr("class", "chord")
+			// Step 3: Remove any excessive chorsa if needed
+			chords
+				.exit()
+				.remove();
+
+			// Step 4: Modify the chords based on their bound data
+			chords
 				.attr("id", function(d, i) { return "chord_" + i; })
 				.style("fill", d3.rgb(180,180,180))
 				.style("stroke", d3.rgb(180,180,180).darker(3))
 				.style("opacity", 0.5)
-				// .style("opacity", function(d){
-				// 	if(d.source.index==2 || d.target.index==2)
-				// 		return 1;
-				// 	else
-				// 		return 0.1
-				// })
 				.attr("d", function(d) { return chord(d)} )
-				.on("hover", function (d) {
-				})
-				.on("click", function (d,i) {
-				});
-
-
-
-			// STEP 8: Draw NEW Ticks
-			var ticks = svgGroup
-				.selectAll(".ticks")
-				.data(arc_data)
-				.selectAll("g")
-				.data(groupTicks)
-				.enter()
-				.append("g")
-				.attr("transform", function(d) {
-			        return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-			            + "translate(" + (outerRadius + 10) + ",0)";
-			      });
-			ticks
-				.append("line")
-				.attr("x1", 1)
-			      .attr("y1", 0)
-			      .attr("x2", 10)
-			      .attr("y2", 0)
-			      .style("stroke", "#000");
-			ticks
-	      	      .append("text")
-			      .attr("x", 15)
-			      .attr("font-size", "11px")
-			      .attr("dy", ".35em")
-				.attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180)translate(-30)" : null; })
-				.style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-			      .text(function(d) { return d.label; });
 
 
 		}
 
-		function update(arc_data, chord_data){
-			// Update Arcs
-			svgGroup.selectAll(".arc")
-				.data(arc_data)
-				.attr("d", function(d) { return arc(d)});
 
-			// Update Chords
-			svgGroup.selectAll(".chord")
-				.data(chord_data)
-				.attr("d", function(d) { return chord(d)} );
-
-			svgGroup.selectAll(".ticks")
-				.data(arc_data)
-					.selectAll("g")
-					.data(groupTicks)
-						.attr("transform", function(d) {
-					        return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-					            + "translate(" + (outerRadius + 10) + ",0)";
-					      });
-
-		}
-
-		function exit(arc_data, chord_data){
-			svgGroup.selectAll(".arc")
-				.data(arc_data)
-				.exit()
-				.remove();
-
-			svgGroup.selectAll(".chord")
-				.data(chord_data)
-				.exit()
-				.remove();
-
-			svgGroup.selectAll(".ticks")
-				.data(arc_data)
-					.selectAll("g")
-					.data(groupTicks)
-					.exit()
-					.remove();
-		}
 
 
 		function redraw(){
@@ -342,23 +243,8 @@
 			.matrix(od_matrix)
 			.sortGroups(d3.descending);
 
-			enter(chordLayout.groups(), chordLayout.chords());
 			update(chordLayout.groups(), chordLayout.chords());
-			exit(chordLayout.groups(), chordLayout.chords());
 		}
-
-
-		// Returns an array of tick angles and labels, given a group.
-		function groupTicks(d,i) {
-			var k = (d.endAngle - d.startAngle) / (d.value);
-			return d3.range(0, d.value,1).map(function(v, i) {
-				return {
-					angle: v * k + d.startAngle,
-					label: i % 5 ? null : v  + "%"
-				};
-			});
-		}
-
 
 
 	</script>

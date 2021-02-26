@@ -149,16 +149,21 @@ a img:hover	{
 
 
 a:hover, a:focus {
+  color: rgb(100,0,0);
 }
 a, a:visited {
-	/* text-decoration:none; */
+	text-decoration:none;
 }
 
 
 a {
-  color: #222; } /*#*/
+  /* color: rgb(100,0,0); */
+  font-weight: bold;
+  } /*#*/
 a:hover {
-  color: #33C3F0; }
+  color: rgb(255,0,0);
+  /* color: #33C3F0;  */
+}
 
   a.emphasis {
     color: #33C3F0; } /*#222*/

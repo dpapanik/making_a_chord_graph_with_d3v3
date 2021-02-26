@@ -128,12 +128,6 @@
 			.style("fill", d3.rgb(180,180,180))
 			.style("stroke", d3.rgb(180,180,180).darker(3))
 			.style("opacity", 0.5)
-			// .style("opacity", function(d){
-			// 	if(d.source.index==2 || d.target.index==2)
-			// 		return 1;
-			// 	else
-			// 		return 0.1
-			// })
 			.attr("d", function(d) { return chord(d)} )
 			.on("hover", function (d) {
 			})
@@ -141,6 +135,14 @@
 			});
 
 
+		// STEP 8: Change attributes of Chords (example)
+		 svgGroup.selectAll(".chord")
+			.style("opacity", function(d){
+				if(d.source.index==2 || d.target.index==2)
+					return 1;
+				else
+					return 0.1
+			});
 
 
 
@@ -174,7 +176,6 @@
 			}
 			return stations;
 		}
-
 		function createMatrix(tripData, stationData){
 			var indexByNameTrip = d3.map();
 			var nameByIndexTrip = d3.map();
