@@ -56,6 +56,7 @@
       <p>
         In this tutorial, you will learn how to make a chord graph.
         This example uses <a href="https://d3js.org/d3.v3.min.js">D3.js v3</a> and <a href="http://getskeleton.com/">Skeleton</a> boilerplate.
+        Before you begin, visit and read the following <a href="#links">links</a> at the bottom of this page.
         <br>
         The GitHub repository for this tutorial is <a href="https://github.com/dpapanik/making_a_chord_graph_with_d3v3">here</a>.
       </p>
@@ -216,7 +217,7 @@
   </div>
 
 
-  <div class="container one-bottom" >
+  <div id="step_04" class="container one-bottom" >
     <div class="twelve columns">
       <h3>STEP 4: Create SVG Shape Generators for arcs and chords</h3>
       <p>
@@ -282,7 +283,7 @@
 
   <div class="container one-bottom" >
     <div class="twelve columns">
-      <h3>STEP 6: Draw Arcs/Groups</h3>
+      <h3>STEP 6: Draw Arcs</h3>
       <p>
 
       </p>
@@ -334,8 +335,423 @@
   </div>
 
 
+
   <div class="container" >
     <div id="chord_03" class="twelve columns">
+    </div>
+  </div>
+
+
+  <div class="container one-bottom" >
+    <div class="twelve columns">
+      <h3>STEP 8: Combine steps 6 and 7 into a single reusable function</h3>
+      <p>
+        Up till step 7, you learned how to create and draw a chord graph. What if you want your chord graph to interactively change when your data change?
+        In this step, we will follow the typical workflow in D3, by creating three functions <code>enter()</code>, <code>update()</code>, <code>exit()</code>.
+      </p>
+      <p>
+        After we bind an array of data to an array of SVG elements (which is done through the <code>.data()</code> function), there are three possible cases:
+        (1) the elements of the data array are equal in number to the SVG elements (one-to-one coupling);
+        (2) the elements of the data array are more than the SVG elements (more SVG elements are needed for a one-to-one coupling);
+        (3) the elements of the data array are fewer than the SVG elements (some SVG elements need to be deleted for a one-to-one coupling);
+      </p>
+      <p>After the data binding occurs, D3 stores 1) the matched SVG elements, 2) the missing SVG elements, and 3) the excessive unmatched SVG elements, in three different arrays.
+        The matched SVG elements are directly accessible by selecting the elements that the data have been previously bound to.
+        The missing SVG elements are accessible by the <code>.enter()</code> function. The excessive SVG elements are accessible by the <code>.exit()</code> function.
+      </p>
+
+
+
+
+
+      <h4>Function Update()</h4>
+      <p>
+        To make our code  more modular, we will create a function that we will call <code>update()</code> that will take as inputs the <code>arc_data</code> and <code>chord_data</code> and within this function we will access each of the three groups of SVG elements sequentially.
+      </p>
+
+      <pre>
+        <code>
+          function update(arc_data, chord_data){
+
+      			// Arcs
+      			// Step 1: Bind data to arcs
+      			var arcs = svgGroup
+      			.selectAll(".arc")
+      			.data(arc_data);
+
+      			// Step 2: Append any new arcs if needed
+      			arcs
+      			.enter()
+      			.append("path")
+      			.attr("class", "arc");
+
+      			// Step 3: Remove any excessive arcs if needed
+      			arcs
+      			.exit()
+      			.remove();
+
+      			// Step 4: Modify the arcs based on their bound data
+      			arcs
+      			.attr("id", function(d, i) { return "arc_" + i; })
+      			.style("fill", function(d) { return color(d.index); })
+      			.style("stroke", d3.rgb(0,0,0))
+      			.style("stroke-width", 1)
+      			.attr("d", function(d) { return arc(d)});
+
+
+      			// Chords
+      			// STEP 1: Bind data to chords
+      			var chords = svgGroup
+      			.selectAll(".chord")
+      				.data(chord_data);
+
+      			// Step 2: Append any new chords if needed
+      			chords
+      				.enter()
+      				.append("path")
+      				.attr("class", "chord");
+
+      			// Step 3: Remove any excessive chords if needed
+      			chords
+      				.exit()
+      				.remove();
+
+      			// Step 4: Modify the chords based on their bound data
+      			chords
+      				.attr("id", function(d, i) { return "chord_" + i; })
+      				.style("fill", d3.rgb(180,180,180))
+      				.style("stroke", d3.rgb(180,180,180).darker(3))
+      				.style("opacity", 0.5)
+      				.attr("d", function(d) { return chord(d)} )
+
+      		}
+        </code>
+      </pre>
+
+      <p>
+        In what follows, I describe each substep of function <code>update()</code> in detail.
+      </p>
+
+      <h4>Sub-Step 1: Bind data to elements</h4>
+      <p>
+        Create a new variable to store each selection, <code>var arcs</code> and <code>var chords</code>.
+        Then, from the already saved selection <code>svgGroup</code>, sellect all elements of class <code>.arc</code> (note that if there are no SVG elements of that class yet, the selection will be an empty array with the size of the data array).
+        Then, bind the data to the selected SVG elements using the <code>.data()</code> function. After the data binding has happened, the data will be stored in the SVG elements.
+      </p>
+      <pre>
+        <code>
+          // Bind data to arcs
+          var arcs = svgGroup
+            .selectAll(".arc")
+            .data(arc_data);
+
+          // Bind data to chords
+          var chords = svgGroup
+            .selectAll(".chord")
+            .data(chord_data);
+        </code>
+      </pre>
+
+      <h4>Sub-Step 2: Append any new SVG elements if needed</h4>
+      <p>
+        Select each of the stored selections <code>arcs</code> and <code>chords</code> of SVG elements.
+        Then, for each one, get the missing SVG elements by calling the <code>.enter()</code> function. Then, add the missing SVG elements by appending a <code>"path"</code>.
+        Finally, change the <code>"class"</code> attribute of each newly added <code>"path"</code> to be <code>"arc"</code> and <code>"chord"</code> respectively.
+      </p>
+      <pre>
+        <code>
+          // Sub-Step 2: Append any new arcs if needed
+          arcs
+            .enter()
+            .append("path")
+            .attr("class", "arc");
+
+          // Sub-Step 2: Append any new chords if needed
+          chords
+            .enter()
+            .append("path")
+            .attr("class", "chord")
+        </code>
+      </pre>
+
+
+      <h4>Sub-Step 3: Remove any excessive SVG elements if needed</h4>
+      <p>
+        After we have added any missing SVG elements, we will now remove any excessive SVG elements. The excessive SVG elements can be accessed by the <code>.exit()</code> function.
+        After selecting any excessive SVG elements, remove (delete) them by <code>.remove()</code>:
+
+      </p>
+      <pre>
+        <code>
+          // Sub-Step 3: Remove any excessive arcs if needed
+          arcs
+            .exit()
+            .remove();
+
+          // Sub-Step 3: Remove any excessive chords if needed
+          chords
+            .exit()
+            .remove();
+        </code>
+      </pre>
+
+      <h4>Sub-Step 4: Modify SVG elements based on their bound data</h4>
+      <p>
+        After we have added and removed any missing or excessive SVG elements, we will now modify the matched SVG elements based on their bound data.
+        There is no special selection function for that - the matched SVG elements are returned by default each time we call the saved selectors <code>arcs</code> or <code>chords</code>.
+        First, we change their id attribute, then we change their styling, and finally, we modify appropriately their "d" attribute of their paths, by passing there the SVG Shape Generator functions we created in <a href="#step_04">step 4</a>.
+      </p>
+      <pre>
+        <code>
+        // Sub-Step 4: Modify the arcs based on their bound data
+        arcs
+          .attr("id", function(d, i) { return "arc_" + i; })
+          .style("fill", function(d) { return color(d.index); })
+          .style("stroke", d3.rgb(0,0,0))
+          .style("stroke-width", 1)
+          .attr("d", function(d) { return arc(d)});
+
+        // Sub-Step 4: Modify the chords based on their bound data
+        chords
+          .attr("id", function(d, i) { return "chord_" + i; })
+          .style("fill", d3.rgb(180,180,180))
+          .style("stroke", d3.rgb(180,180,180).darker(3))
+          .style("opacity", 0.5)
+          .attr("d", function(d) { return chord(d)} )
+        </code>
+      </pre>
+
+
+
+      <h4>Create SVG group</h4>
+      <p>We will also need a specialized function to create SVG groups and append them to a given <code>div</code>. This way, we will be able to create SVG group elements anywhere in our page, give them unique IDs, and create multiple chord graphs.</p>
+      <pre>
+        <code>
+          function create_svg_group(div_id, svg_width, svg_height, svg_xPos, svg_yPos){
+            var svg_group = d3.select("#"+div_id).append("svg")
+              .attr("width", svg_width)
+              .attr("height", svg_height)
+              .append("g")
+              .attr("transform", "translate(" + svg_xPos + "," + svg_yPos + ")");
+            return svg_group;
+          }
+        </code>
+      </pre>
+
+    </div>
+  </div>
+
+
+  <div class="container one-bottom" >
+    <div class="twelve columns">
+      <h3>STEP 9: Combining everything into a single function</h3>
+      <p>
+        For convenience, we can combine getting/generating data, applying layout to data, and the <code>update()</code> function into one single function that we can call <code>redraw()</code>
+      </p>
+      <pre>
+        <code>
+          function redraw(svg_group){
+            // Get or Generate data
+            var nStations = get_nStations();
+            var nTrips = get_nTrips(nStations);
+
+            tripData = createTripData(nTrips, nStations);
+            stationData = createStationData(nStations);
+            od_matrix = createMatrix(tripData, stationData);
+
+            // Apply layout to data
+            chordLayout
+              .matrix(od_matrix)
+              .sortGroups(d3.descending);
+
+            // Update()
+            update(svg_group, chordLayout.groups(), chordLayout.chords());
+          }
+        </code>
+      </pre>
+    </div>
+  </div>
+
+  <div class="container" >
+    <div class="row one-bottom">
+      <button class="four columns" onClick="create_svg_group('chord_04', 800, 800, xPos + outerRadius, yPos + outerRadius)">Create SVG</button>
+      <button class="four columns" onClick="remove_svg('chord_04')">Remove SVG</button>
+      <button class="four columns" onClick="redraw(d3.select('#chord_04').selectAll('svg').select('g'))">Redraw</button>
+    </div>
+
+    <div id="chord_04" class="twelve columns">
+    </div>
+  </div>
+
+
+  <div class="container one-bottom" >
+    <div class="twelve columns">
+      <h3>STEP 10: Adding labels and ticks</h3>
+      <p>
+        Below is the full code for the <code>update() function including the addition of the ticks</code>
+      </p>
+      <pre>
+        <code>
+          function update(svg_group, arc_data, chord_data){
+
+            // Arcs
+            // Step 1: Bind data to arcs
+            var arcs = svg_group
+            .selectAll(".arc")
+            .data(arc_data);
+
+            // Step 2: Append any new arcs if needed
+            arcs
+            .enter()
+            .append("path")
+            .attr("class", "arc");
+
+            // Step 3: Remove any excessive arcs if needed
+            arcs
+            .exit()
+            .remove();
+
+            // Step 4: Modify the arcs based on their bound data
+            arcs
+            .attr("id", function(d, i) { return "arc_" + i; })
+            .style("fill", function(d) { return color(d.index); })
+            .style("stroke", d3.rgb(0,0,0))
+            .style("stroke-width", 1)
+            .attr("d", function(d) { return arc(d)});
+
+
+            // Chords
+            // STEP 1: Bind data to chords
+            var chords = svg_group
+            .selectAll(".chord")
+            .data(chord_data);
+
+            // Step 2: Append any new chords if needed
+            chords
+            .enter()
+            .append("path")
+            .attr("class", "chord");
+
+            // Step 3: Remove any excessive chorsa if needed
+            chords
+            .exit()
+            .remove();
+
+            // Step 4: Modify the chords based on their bound data
+            chords
+            .attr("id", function(d, i) { return "chord_" + i; })
+            .style("fill", d3.rgb(180,180,180))
+            .style("stroke", d3.rgb(180,180,180).darker(3))
+            .style("opacity", 0.5)
+            .attr("d", function(d) { return chord(d)} )
+
+
+            //TickGroups
+            // Step 1: Bind data to tick groups
+            var tickGroups = svg_group
+            .selectAll(".tickGroups")
+            .data(arc_data);
+
+            // Step 2: Append any new tick groups if needed
+            tickGroups
+            .enter()
+            .append("g")
+            .attr("class", "tickGroups");
+
+            // Step 3: Remove any excessive tick groups if needed
+            tickGroups
+            .exit()
+            .remove();
+
+
+            //Ticks
+            // Step 1: Bind data
+            var ticks = tickGroups
+            .selectAll("g")
+            .data(groupTicks);
+
+            // Step 2: Append any new elements if needed
+            // SubStep 2.1: Append any new ticks if needed
+            var tick = ticks
+            .enter()
+            .append("g");
+
+            // SubStep 2.2: Within each tick append any new lines if needed
+            tick
+            .append("line")
+            .attr("x1", 1)
+            .attr("y1", 0)
+            .attr("x2", 10)
+            .attr("y2", 0)
+            .style("stroke", "#000");
+
+            // SubStep 2.3: Within each tick append any new text if needed
+            tick
+            .append("text")
+            .attr("x", 15)
+            .attr("font-size", "11px")
+            .attr("dy", ".35em");
+
+
+            // Step 3: Remove any excessive elements if needed
+            ticks
+            .exit()
+            .remove();
+
+
+            // Step 4: Modify elements based on their bound data
+            ticks
+            .attr("transform", function(d) {
+              return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+              + "translate(" + (outerRadius + 10) + ",0)";
+            });
+
+            ticks
+            .selectAll("text")
+            .attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180)translate(-30)" : null; })
+            .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+            .text(function(d) { return d.label; });
+
+          }
+        </code>
+      </pre>
+    </div>
+  </div>
+
+  <div class="container" >
+    <div class="twelve columns one-bottom">
+      <h3>STEP 11: Try it</h3>
+      <p>Click the "CREATE SVG" button below to create an SVG placeholder and then the "REDRAW" button to create a Chord graph with ticks</p>
+    </div>
+    <div class="row one-bottom">
+      <button class="four columns" onClick="create_svg_group('chord_05', 800, 800, xPos + outerRadius, yPos + outerRadius)">Create SVG</button>
+      <button class="four columns" onClick="remove_svg('chord_05')">Remove SVG</button>
+      <button class="four columns" onClick="redraw_v2(d3.select('#chord_05').selectAll('svg').select('g'))">Redraw</button>
+    </div>
+
+    <div id="chord_05" class="twelve columns">
+    </div>
+  </div>
+
+
+
+
+  <div id="links" class="container one-bottom" >
+    <div class="twelve columns">
+      <h2>Links</h2>
+      <h4>D3.JS</h4>
+      <ul>
+        <li><a href="https://www.dashingd3js.com/">Dashing D3js</a></li>
+        <li><a href="https://www.d3indepth.com/">D3 In Depth</a></li>
+        <li><a href="http://square.github.io/intro-to-d3/">Intro to D3js by Square</a></li>
+      </ul>
+      <h4>D3 Layouts</h4>
+      <ul>
+        <li>  <a href="https://d3indepth.com/layouts/">D3 In Depth Layouts</a></li>
+        <li> <a href="https://d3-wiki.readthedocs.io/zh_CN/master/Chord-Layout/">Chord Layout</a> </li>
+        <li> Read answer <a href="https://stackoverflow.com/questions/21813723/change-and-transition-dataset-in-chord-diagram-with-d3">"Creating a Chord Diagram"</a>  by <a href="https://stackoverflow.com/users/3128209/ameliabr">AmeliaBR</a> in Stack Overflow (scroll down until you find the answer) </li>
+      </ul>
+
     </div>
   </div>
 
@@ -357,7 +773,7 @@
     var nTrips = 30;
     var nStations = 6;
 
-    var margin = 0;
+    var margin = 50;
     var width = 600;
 
     var xPos = margin;
@@ -521,6 +937,13 @@
     /********************/
 
 
+    function get_nStations() {
+      return 4 + Math.round(Math.random()*10);
+    }
+    function get_nTrips(nStations) {
+      return nStations*10;
+    }
+
     function createTripData(nTrips, nStations){
       var trips = [];
       for(var i=0; i<nTrips; i++){
@@ -582,7 +1005,245 @@
       return od_matrix;
     }
 
+    function create_svg_group(div_id, svg_width, svg_height, svg_xPos, svg_yPos){
+      var svg_group = d3.select("#"+div_id).append("svg")
+        .attr("width", svg_width)
+        .attr("height", svg_height)
+        .append("g")
+        .attr("transform", "translate(" + svg_xPos + "," + svg_yPos + ")");
+      return svg_group;
+    }
 
+    function remove_svg(div_id){
+      d3.select("#"+div_id).selectAll("svg").remove();
+    }
+
+    function redraw(svg_group){
+      // Get or Generate data
+      var nStations = get_nStations();
+      var nTrips = get_nTrips(nStations);
+
+      var tripData = createTripData(nTrips, nStations);
+      var stationData = createStationData(nStations);
+      var od_matrix = createMatrix(tripData, stationData);
+
+      // Apply layout to data
+      chordLayout
+        .matrix(od_matrix)
+        .sortGroups(d3.descending);
+
+      // Update()
+      update(svg_group, chordLayout.groups(), chordLayout.chords())
+    }
+
+
+    function update(svg_group, arc_data, chord_data){
+      // Arcs
+      // Step 1: Bind data to arcs
+      var arcs = svg_group
+      .selectAll(".arc")
+      .data(arc_data);
+
+      // Step 2: Append any new arcs if needed
+      arcs
+      .enter()
+      .append("path")
+      .attr("class", "arc");
+
+      // Step 3: Remove any excessive arcs if needed
+      arcs
+      .exit()
+      .remove();
+
+      // Step 4: Modify the arcs based on their bound data
+      arcs
+      .attr("id", function(d, i) { return "arc_" + i; })
+      .style("fill", function(d) { return color(d.index); })
+      .style("stroke", d3.rgb(0,0,0))
+      .style("stroke-width", 1)
+      .attr("d", function(d) { return arc(d)});
+
+
+      // Chords
+      // STEP 1: Bind data to chords
+      var chords = svg_group
+      .selectAll(".chord")
+      .data(chord_data);
+
+      // Step 2: Append any new chords if needed
+      chords
+      .enter()
+      .append("path")
+      .attr("class", "chord");
+
+      // Step 3: Remove any excessive chorsa if needed
+      chords
+      .exit()
+      .remove();
+
+      // Step 4: Modify the chords based on their bound data
+      chords
+      .attr("id", function(d, i) { return "chord_" + i; })
+      .style("fill", d3.rgb(180,180,180))
+      .style("stroke", d3.rgb(180,180,180).darker(3))
+      .style("opacity", 0.5)
+      .attr("d", function(d) { return chord(d)} )
+
+    }
+
+
+    function update_v2(svg_group, arc_data, chord_data){
+
+      // Arcs
+      // Step 1: Bind data to arcs
+      var arcs = svg_group
+      .selectAll(".arc")
+      .data(arc_data);
+
+      // Step 2: Append any new arcs if needed
+      arcs
+      .enter()
+      .append("path")
+      .attr("class", "arc");
+
+      // Step 3: Remove any excessive arcs if needed
+      arcs
+      .exit()
+      .remove();
+
+      // Step 4: Modify the arcs based on their bound data
+      arcs
+      .attr("id", function(d, i) { return "arc_" + i; })
+      .style("fill", function(d) { return color(d.index); })
+      .style("stroke", d3.rgb(0,0,0))
+      .style("stroke-width", 1)
+      .attr("d", function(d) { return arc(d)});
+
+
+      // Chords
+      // STEP 1: Bind data to chords
+      var chords = svg_group
+      .selectAll(".chord")
+      .data(chord_data);
+
+      // Step 2: Append any new chords if needed
+      chords
+      .enter()
+      .append("path")
+      .attr("class", "chord");
+
+      // Step 3: Remove any excessive chorsa if needed
+      chords
+      .exit()
+      .remove();
+
+      // Step 4: Modify the chords based on their bound data
+      chords
+      .attr("id", function(d, i) { return "chord_" + i; })
+      .style("fill", d3.rgb(180,180,180))
+      .style("stroke", d3.rgb(180,180,180).darker(3))
+      .style("opacity", 0.5)
+      .attr("d", function(d) { return chord(d)} )
+
+
+      //TickGroups
+      // Step 1: Bind data to tick groups
+      var tickGroups = svg_group
+      .selectAll(".tickGroups")
+      .data(arc_data);
+
+      // Step 2: Append any new tick groups if needed
+      tickGroups
+      .enter()
+      .append("g")
+      .attr("class", "tickGroups");
+
+      // Step 3: Remove any excessive tick groups if needed
+      tickGroups
+      .exit()
+      .remove();
+
+
+      //Ticks
+      // Step 1: Bind data
+      var ticks = tickGroups
+      .selectAll("g")
+      .data(groupTicks);
+
+      // Step 2: Append any new elements if needed
+      // SubStep 2.1: Append any new ticks if needed
+      var tick = ticks
+      .enter()
+      .append("g");
+
+      // SubStep 2.2: Within each tick append any new lines if needed
+      tick
+      .append("line")
+      .attr("x1", 1)
+      .attr("y1", 0)
+      .attr("x2", 10)
+      .attr("y2", 0)
+      .style("stroke", "#000");
+
+      // SubStep 2.3: Within each tick append any new text if needed
+      tick
+      .append("text")
+      .attr("x", 15)
+      .attr("font-size", "11px")
+      .attr("dy", ".35em");
+
+
+      // Step 3: Remove any excessive elements if needed
+      ticks
+      .exit()
+      .remove();
+
+
+      // Step 4: Modify elements based on their bound data
+      ticks
+      .attr("transform", function(d) {
+        return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+        + "translate(" + (outerRadius + 10) + ",0)";
+      });
+
+      ticks
+      .selectAll("text")
+      .attr("transform", function(d) { return d.angle > Math.PI ? "rotate(180)translate(-30)" : null; })
+      .style("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+      .text(function(d) { return d.label; });
+
+    }
+
+
+    function redraw_v2(svg_group){
+      // Get or Generate data
+      var nStations = get_nStations();
+      var nTrips = get_nTrips(nStations);
+
+      var tripData = createTripData(nTrips, nStations);
+      var stationData = createStationData(nStations);
+      var od_matrix = createMatrix(tripData, stationData);
+
+      // Apply layout to data
+      chordLayout
+        .matrix(od_matrix)
+        .sortGroups(d3.descending);
+
+
+      // Update()
+      update_v2(svg_group, chordLayout.groups(), chordLayout.chords());
+    }
+
+    // Returns an array of tick angles and labels, given a group.
+		function groupTicks(d,i) {
+			var k = (d.endAngle - d.startAngle) / (d.value);
+			return d3.range(0, d.value,1).map(function(v, i) {
+				return {
+					angle: v * k + d.startAngle,
+					label: i % 5 ? null : v  + "%"
+				};
+			});
+		}
 
   </script>
 
