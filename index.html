@@ -57,8 +57,7 @@
         In this tutorial, you will learn how to make a chord graph.
         This example uses <a href="https://d3js.org/d3.v3.min.js">D3.js v3</a> and <a href="http://getskeleton.com/">Skeleton</a> boilerplate.
         Before you begin, visit and read the following <a href="#links">links</a> at the bottom of this page.
-        <br>
-        The GitHub repository for this tutorial is <a href="https://github.com/dpapanik/making_a_chord_graph_with_d3v3">here</a>.
+        If you prefer a version that contains only code and not text description, then check out <a href="https://dpapanik.github.io/making_a_chord_graph_with_d3v3/chord_example_step_01.html">part 1</a>, <a href="https://dpapanik.github.io/making_a_chord_graph_with_d3v3/chord_example_step_02.html">part 2</a>, <a href="https://dpapanik.github.io/making_a_chord_graph_with_d3v3/chord_example_step_03.html">part 3</a>, and <a href="https://dpapanik.github.io/making_a_chord_graph_with_d3v3/chord_example_step_04.html">part 4</a> of the code. The GitHub repository for this tutorial is <a href="https://github.com/dpapanik/making_a_chord_graph_with_d3v3">here</a>.
       </p>
     </div>
   </div>
@@ -588,7 +587,8 @@
     <div class="twelve columns">
       <h3>STEP 10: Adding labels and ticks</h3>
       <p>
-        Below is the full code for the <code>update() function including the addition of the ticks</code>
+        Below is the full code for the <code>update()</code> function including the addition of the ticks. Ticks are presented as percentages. The sum of all arcs constitutes 100%.
+        Each arc starts from 0% and ends at the percentage that the outgoing trips from that arc occupy from the total volume of trips.
       </p>
       <pre>
         <code>
