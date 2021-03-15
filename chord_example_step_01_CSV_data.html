@@ -27,7 +27,8 @@
 	<script type="text/javascript">
 
 		// Chord Graph Tutorial by Dimitris Papanikolaou
-		// 2019 02 3
+		// Example of using a trip dataset
+		// 2021 02 14
 
 		// STEP 1: Setup
 
@@ -44,12 +45,19 @@
 
 
 
+		// This example uses d3.csv(). You can change this function to d3.json() if your data is in JSON format.
+		// Change the file path so that it points to your data
 		var csvFilePath = "data/20190622-20190623-bluebikes.tripdata.csv"
-		// var csvFilePath = "data/sampledata_Divvy.csv"
 
+		// IMPORTANT !!!!!
+		// Note that all of your code will need to be CONTAINED INSIDE the d3.csv() function!!!!
 		d3.csv(csvFilePath, function(tripData){
 			 trips = tripData.map(function(d){
 				var trip={};
+
+				// The time format of your data may likely be different than the time format of this Example
+				// You will need to modify accordingly function d3.time.format("%m/%d/%Y %H:%M") so that it matches the time format of your data
+				// Read about time Formats here: https://github.com/d3/d3-time-format
 
 				trip.duration = +d["tripduration"];
 				trip.start_date = d3.time.format("%Y-%m-%d %H:%M:%S").parse(d["starttime"].slice(0,-5));
@@ -71,33 +79,6 @@
 				trip.trip_id = d[""];
 				trip.type = "full";
 
-
-
-
-					//
-					// // The time format of your data may likely be different than the time format of this Example
-					// // You will need to modify accordingly function d3.time.format("%m/%d/%Y %H:%M") so that it matches the time format of your data
-					// // Read about time Formats here: https://github.com/d3/d3-time-format
-					// trip.duration = +d["Duration"];
-					// trip.start_date = d3.time.format("%m/%d/%Y %H:%M").parse(d["started_at"]);
-					// trip.end_date = d3.time.format("%m/%d/%Y %H:%M").parse(d["ended_at"]);
-					//
-					// trip.start_station = +d["start_station_id"];
-					// trip.start_station_name = d["start_station_name"];
-					//
-					// trip.start_station_lat = +d["start_lat"];
-					// trip.start_station_lng = +d["start_lng"];
-					//
-					// trip.end_station = +d["end_station_id"];
-					// trip.end_station_name = d["end_station_name"];
-					//
-					// trip.end_station_lat = +d["end_lat"];
-					// trip.end_station_lng = +d["end_lng"];
-					//
-					// trip.bikeid = d[""];
-					// trip.trip_id = d["ride_id"];
-					// trip.type = d["rideable_type"];
-					// trip.member_casual = d["member_casual"];
 
 				return trip;
 			});
