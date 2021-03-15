@@ -1,0 +1,20 @@
+ride_id,rideable_type,started_at,ended_at,start_station_name,start_station_id,end_station_name,end_station_id,start_lat,start_lng,end_lat,end_lng,member_casual
+1.38946E+13,docked_bike,2/4/2020 17:52,2/4/2020 17:59,Sedgwick St & North Ave,118,Halsted St & Dickens Ave,225,41.9114,-87.6387,41.9199,-87.6488,member
+5.33902E+13,docked_bike,1/28/2020 17:27,1/28/2020 17:34,State St & Kinzie St,47,Lake Shore Dr & Ohio St,99,41.8892,-87.6278,41.8926,-87.6145,member
+8.64E+13,docked_bike,2/12/2020 13:10,2/12/2020 13:22,McCormick Place,62,Calumet Ave & 33rd St,149,41.8514,-87.6188,41.8349,-87.6179,member
+1.23637E+14,docked_bike,1/26/2020 8:26,1/26/2020 8:30,Stony Island Ave & 75th St,270,Stony Island Ave & 71st St,356,41.7587,-87.5869,41.7665,-87.5865,member
+1.24893E+14,docked_bike,2/6/2020 12:39,2/6/2020 12:47,Clinton St & Lake St,66,Michigan Ave & Lake St,52,41.8856,-87.6418,41.886,-87.6241,member
+1.37271E+14,docked_bike,3/12/2020 8:39,3/12/2020 8:51,Rush St & Cedar St,172,Dearborn St & Monroe St,49,41.9023,-87.6277,41.8813,-87.6295,member
+1.63374E+14,docked_bike,1/22/2020 12:55,1/22/2020 12:59,Desplaines St & Jackson Blvd,107,900 W Harrison St,109,41.8783,-87.6439,41.8748,-87.6498,member
+2.77255E+14,docked_bike,2/28/2020 18:57,2/28/2020 19:17,Morgan St & Lake St,71,California Ave & Lake St,378,41.8855,-87.6523,41.8845,-87.6963,member
+2.99155E+14,docked_bike,3/3/2020 0:07,3/3/2020 0:12,Wood St & Taylor St,317,Paulina St & 18th St,205,41.8692,-87.671,41.8579,-87.6687,member
+3.27363E+14,docked_bike,2/25/2020 7:22,2/25/2020 7:27,Clinton St & Washington Blvd,91,Franklin St & Monroe St,287,41.8834,-87.6412,41.8803,-87.6352,member
+3.60283E+14,docked_bike,2/23/2020 15:31,2/23/2020 16:18,Indiana Ave & Roosevelt Rd,255,Burnham Harbor,4,41.8679,-87.623,41.8563,-87.6133,casual
+3.68336E+14,docked_bike,3/2/2020 18:34,3/2/2020 18:41,Aberdeen St & Randolph St,621,Ogden Ave & Chicago Ave,54,41.8841,-87.6543,41.8964,-87.6541,member
+3.76012E+14,docked_bike,2/5/2020 10:50,2/5/2020 11:07,Damen Ave & Pierce Ave,69,Racine Ave & Fullerton Ave,87,41.9094,-87.6777,41.9256,-87.6584,member
+3.84464E+14,docked_bike,2/12/2020 12:45,2/12/2020 12:55,Daley Center Plaza,81,Sangamon St & Washington Blvd,233,41.8842,-87.6296,41.8832,-87.6511,member
+4.04214E+14,docked_bike,3/12/2020 11:06,3/12/2020 11:13,California Ave & North Ave,276,Leavitt St & North Ave,213,41.9104,-87.6972,41.9102,-87.6823,member
+4.3462E+14,docked_bike,3/1/2020 14:37,3/1/2020 14:47,Morgan St & Lake St,71,Ashland Ave & Grand Ave,277,41.8855,-87.6523,41.8911,-87.6666,casual
+4.61931E+14,docked_bike,3/5/2020 18:17,3/5/2020 18:31,Franklin St & Monroe St,287,Ogden Ave & Chicago Ave,54,41.8803,-87.6352,41.8964,-87.6541,casual
+4.6705E+14,docked_bike,3/17/2020 18:02,3/17/2020 18:29,Honore St & Division St,17,Lincoln Ave & Diversey Pkwy,152,41.9031,-87.6739,41.9322,-87.6586,member
+4.78E+14,docked_bike,2/23/2020 11:21,2/23/2020 11:41,Lake Shore Dr & Ohio St,99,Field Museum,97,41.8926,-87.6145,41.8653,-87.6179,casual
